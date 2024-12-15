@@ -46,6 +46,9 @@ namespace ATPRV_PZ7
 
             // Отображение информации о глубинах и дереве в DataGridView
             dataGridViewInfo.DataSource = _processingInfo;
+
+            var rootNode = BuildTree(rootUrl);
+            PrintTree(rootNode);
         }
 
         private async Task StartCrawling(string rootUrl, int maxDepth)
@@ -147,6 +150,40 @@ namespace ATPRV_PZ7
         {
             return _tree.Values.ToList();
         }
+        private TreeNode BuildTree(string rootUrl)
+        {
+            if (!_tree.ContainsKey(rootUrl))
+                return null;
+
+            var rootNode = new TreeNode { Url = rootUrl };
+
+            foreach (var childUrl in _tree[rootUrl].Links)
+            {
+                if (_tree.ContainsKey(childUrl)) // Проверяем, есть ли информация о дочерней странице
+                {
+                    var childNode = BuildTree(childUrl); // Рекурсивно строим дерево
+                    if (childNode != null)
+                        rootNode.Children.Add(childNode);
+                }
+            }
+
+            return rootNode;
+        }
+
+        private void PrintTree(TreeNode node, int level = 0)
+        {
+            if (node == null) return;
+
+            // Выводим текущий узел с отступом
+            Console.WriteLine(new string('-', level * 2) + node.Url);
+
+            // Рекурсивно выводим дочерние узлы
+            foreach (var child in node.Children)
+            {
+                PrintTree(child, level + 1);
+            }
+        }
+
     }
 
     public class CrawledData
@@ -165,4 +202,11 @@ namespace ATPRV_PZ7
         public int NodeCount { get; set; }
         public string LeafNodes { get; set; }
     }
+    public class TreeNode
+    {
+        public string Url { get; set; }
+        public List<TreeNode> Children { get; set; } = new List<TreeNode>();
+    }
+
+
 }

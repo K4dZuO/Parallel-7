@@ -7,21 +7,29 @@ namespace ATPRV_PZ7.Services
 {
     public class DataGenerationService
     {
+        private int _employeeIdCounter = 1; // Счетчик для генерации уникальных ID сотрудников
+        private int _orderIdCounter = 1;    // Счетчик для генерации уникальных ID заказов
+
         public List<Employee> GenerateEmployees(int count)
         {
-            var faker = new Faker("en");
+            var faker = new Faker("ru");
             var employees = new List<Employee>();
 
             for (int i = 0; i < count; i++)
             {
                 var employee = new Employee
                 {
+                    Id = _employeeIdCounter++, // Уникальный ID сотрудника
                     FullName = faker.Name.FullName(),
-                    Orders = GenerateOrders(faker.Random.Int(50, 100)) // Случайное количество заказов
+                    Orders = GenerateOrders(faker.Random.Int(50, 100))
                 };
 
+                foreach (var order in employee.Orders)
+                {
+                    order.EmployeeId = employee.Id; // Установка связи с сотрудником
+                }
+
                 employees.Add(employee);
-                Console.WriteLine(employee);
             }
 
             return employees;
@@ -29,18 +37,18 @@ namespace ATPRV_PZ7.Services
 
         private List<Order> GenerateOrders(int count)
         {
-            var faker = new Faker("en");
+            var faker = new Faker("ru");
             var orders = new List<Order>();
 
             for (int i = 0; i < count; i++)
             {
                 orders.Add(new Order
                 {
-                    OrderDate = faker.Date.Past(1), // Дата за последний год
-                    OrderSum = faker.Random.Decimal(10, 1000) // Сумма от 10 до 1000
+                    Id = _orderIdCounter++, // Уникальный ID заказа
+                    OrderDate = faker.Date.Past(1),
+                    OrderSum = Math.Round(faker.Random.Decimal(10, 1000), 2)
                 });
             }
-
             return orders;
         }
     }

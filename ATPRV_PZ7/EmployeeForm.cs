@@ -18,12 +18,15 @@ namespace ATPRV_PZ7
             _dataService = new DataGenerationService();
         }
 
-        private void BtnGenerateData_Click(object sender, EventArgs e)
+        private async void BtnGenerateData_Click(object sender, EventArgs e)
         {
-            Task.Run(() =>
+            labelStatus.Text = "Ждите...";
+
+            // Асинхронная генерация данных
+            await Task.Run(() =>
             {
                 // Генерация данных
-                _employees = _dataService.GenerateEmployees(10000);
+                _employees = _dataService.GenerateEmployees(50000);
 
                 // Вывод первых 100 сотрудников
                 dgvEmployees.Invoke(() => dgvEmployees.DataSource = _employees.Take(100).ToList());
@@ -32,6 +35,9 @@ namespace ATPRV_PZ7
                 dgvOrders.Invoke(() => dgvOrders.DataSource = _employees.SelectMany(emp => emp.Orders).Take(500).ToList());
             });
 
+            // Уведомляем о завершении работы
+            labelStatus.Text = "Готово!";
+            labelStatus.ForeColor = Color.Green;
         }
 
         private void BtnFilterByFIO_Click(object sender, EventArgs e)
@@ -40,34 +46,39 @@ namespace ATPRV_PZ7
             {
                 string filter = txtFioFilter.Text;
 
+                // LINQ-запрос
                 var linqTime = MeasureTime(() =>
                 {
                     var result = _employees
-                        .Where(emp => emp.FullName.Contains(filter))
-                        .SelectMany(emp => emp.Orders)
+                        .Where(emp => emp.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase)) // Игнорируем регистр
+                        .SelectMany(emp => emp.Orders) // Получаем заказы соответствующих сотрудников
                         .ToList();
 
                     dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
-                
                 lblLinqTime.Invoke(() => lblLinqTime.Text = $"LINQ: {linqTime} ms");
 
+                // PLINQ-запрос
                 var plinqTime = MeasureTime(() =>
                 {
                     var result = _employees
                         .AsParallel()
-                        .Where(emp => emp.FullName.Contains(filter))
+                        .Where(emp => emp.FullName.Contains(filter, StringComparison.OrdinalIgnoreCase)) // Игнорируем регистр
                         .SelectMany(emp => emp.Orders)
                         .ToList();
+
                     dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblPlinqTime.Invoke(() => lblPlinqTime.Text = $"PLINQ: {plinqTime} ms");
             });
         }
+
+
         private void BtnFilterByStart_Click(object sender, EventArgs e)
         {
+            // Запуск асинхронной задачи
             Task.Run(() =>
             {
                 string filter = txtFioFilter.Text;
@@ -76,10 +87,11 @@ namespace ATPRV_PZ7
                 var linqTime = MeasureTime(() =>
                 {
                     var result = _employees
-                        .Where(emp => emp.FullName.StartsWith(filter)) // Фильтрация сотрудников
-                        .SelectMany(emp => emp.Orders) // Объединение заказов
+                        .Where(emp => emp.FullName.StartsWith(filter, StringComparison.OrdinalIgnoreCase)) // Игнорируем регистр
+                        .SelectMany(emp => emp.Orders) // Получаем заказы сотрудников
                         .ToList();
-                    dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result); // Отображение результатов
+
+                    dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblLinqTime.Invoke(() => lblLinqTime.Text = $"LINQ: {linqTime} ms");
@@ -89,15 +101,17 @@ namespace ATPRV_PZ7
                 {
                     var result = _employees
                         .AsParallel()
-                        .Where(emp => emp.FullName.StartsWith(filter)) // Параллельная фильтрация
+                        .Where(emp => emp.FullName.StartsWith(filter, StringComparison.OrdinalIgnoreCase)) // Игнорируем регистр
                         .SelectMany(emp => emp.Orders)
                         .ToList();
+
                     dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblPlinqTime.Invoke(() => lblPlinqTime.Text = $"PLINQ: {plinqTime} ms");
             });
         }
+
 
         private long MeasureTime(Action action)
         {
@@ -106,94 +120,111 @@ namespace ATPRV_PZ7
             sw.Stop();
             return sw.ElapsedMilliseconds;
         }
-        
+
         private void BtnFilterByDate_Click(object sender, EventArgs e)
         {
             Task.Run(() => {
                 DateTime selectedDate = dtpFilterDate.Value;
 
+                // LINQ-запрос
                 var linqTime = MeasureTime(() =>
                 {
                     var result = _employees
                         .SelectMany(emp => emp.Orders)
-                        .Where(order => order.OrderDate >= selectedDate)
+                        .Where(order => order.OrderDate <= selectedDate) // Изменено условие на "до указанной даты"
                         .ToList();
+
                     dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblLinqTime.Invoke(() => lblLinqTime.Text = $"LINQ: {linqTime} ms");
 
+                // PLINQ-запрос
                 var plinqTime = MeasureTime(() =>
                 {
                     var result = _employees
                         .AsParallel()
                         .SelectMany(emp => emp.Orders)
-                        .Where(order => order.OrderDate >= selectedDate)
+                        .Where(order => order.OrderDate <= selectedDate) // Изменено условие на "до указанной даты"
                         .ToList();
+
                     dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
+                // Вывод времени выполнения PLINQ
                 lblPlinqTime.Invoke(() => lblPlinqTime.Text = $"PLINQ: {plinqTime} ms");
             });
         }
+
+
         private void BtnFilterByDateBefore_Click(object sender, EventArgs e)
         {
             Task.Run(() => {
                 DateTime selectedDate = dtpFilterDate.Value;
 
-                // LINQ
+                // LINQ-запрос
                 var linqTime = MeasureTime(() =>
                 {
                     var result = _employees
                         .SelectMany(emp => emp.Orders) // Объединение всех заказов сотрудников
-                        .Where(order => order.OrderDate <= selectedDate) // Фильтрация заказов
+                        .Where(order => order.OrderDate >= selectedDate) // Фильтрация заказов
                         .ToList();
-                    dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result); // Отображение результата
+
+                    dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblLinqTime.Invoke(() => lblLinqTime.Text = $"LINQ: {linqTime} ms");
 
-                // PLINQ
+                // PLINQ-запрос
                 var plinqTime = MeasureTime(() =>
                 {
                     var result = _employees
                         .AsParallel()
                         .SelectMany(emp => emp.Orders)
-                        .Where(order => order.OrderDate <= selectedDate) // Параллельная фильтрация
+                        .Where(order => order.OrderDate >= selectedDate) // Фильтрация заказов
                         .ToList();
-                    dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result); // Отображение результата
+
+                    dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblPlinqTime.Invoke(() => lblPlinqTime.Text = $"PLINQ: {plinqTime} ms");
             });
         }
-        
+
+
         private void BtnSortByAvgSum_Click(object sender, EventArgs e)
         {
             Task.Run(() =>
             {
+                // LINQ-запрос
                 var linqTime = MeasureTime(() =>
                 {
                     var result = _employees
-                        .OrderBy(emp => emp.Orders.Average(order => order.OrderSum))
+                        .Where(emp => emp.Orders.Any()) // Учитываем только сотрудников с заказами
+                        .OrderBy(emp => emp.Orders.Average(order => order.OrderSum)) // Сортируем по средней сумме заказов
                         .ToList();
+
                     dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblLinqTime.Invoke(() => lblLinqTime.Text = $"LINQ: {linqTime} ms");
 
+                // PLINQ-запрос
                 var plinqTime = MeasureTime(() =>
                 {
                     var result = _employees
                         .AsParallel()
-                        .OrderBy(emp => emp.Orders.Average(order => order.OrderSum))
+                        .Where(emp => emp.Orders.Any()) // Учитываем только сотрудников с заказами
+                        .OrderBy(emp => emp.Orders.Average(order => order.OrderSum)) // Сортировка по средней сумме заказов
                         .ToList();
+
                     dgvQueryResults.Invoke(() => dgvQueryResults.DataSource = result);
                 });
 
                 lblPlinqTime.Invoke(() => lblPlinqTime.Text = $"PLINQ: {plinqTime} ms");
             });
         }
+
 
     }
 }
