@@ -26,6 +26,12 @@
         {
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            labelDepth3 = new Label();
+            labelDepth2 = new Label();
+            labelDepth1 = new Label();
+            labelDepth0 = new Label();
+            label2 = new Label();
+            label1 = new Label();
             buttonStartCrawl = new Button();
             textBoxRootUrl = new TextBox();
             textBoxDepth = new TextBox();
@@ -33,8 +39,6 @@
             dataGridViewInfo = new DataGridView();
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
-            label1 = new Label();
-            label2 = new Label();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridViewResults).BeginInit();
@@ -55,6 +59,10 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(labelDepth3);
+            tabPage1.Controls.Add(labelDepth2);
+            tabPage1.Controls.Add(labelDepth1);
+            tabPage1.Controls.Add(labelDepth0);
             tabPage1.Controls.Add(label2);
             tabPage1.Controls.Add(label1);
             tabPage1.Controls.Add(buttonStartCrawl);
@@ -69,6 +77,60 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Crawler";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // labelDepth3
+            // 
+            labelDepth3.AutoSize = true;
+            labelDepth3.Location = new Point(585, 81);
+            labelDepth3.Name = "labelDepth3";
+            labelDepth3.Size = new Size(50, 20);
+            labelDepth3.TabIndex = 10;
+            labelDepth3.Text = "label3";
+            // 
+            // labelDepth2
+            // 
+            labelDepth2.AutoSize = true;
+            labelDepth2.Location = new Point(585, 46);
+            labelDepth2.Name = "labelDepth2";
+            labelDepth2.Size = new Size(50, 20);
+            labelDepth2.TabIndex = 9;
+            labelDepth2.Text = "label3";
+            // 
+            // labelDepth1
+            // 
+            labelDepth1.AutoSize = true;
+            labelDepth1.Location = new Point(359, 81);
+            labelDepth1.Name = "labelDepth1";
+            labelDepth1.Size = new Size(50, 20);
+            labelDepth1.TabIndex = 8;
+            labelDepth1.Text = "label3";
+            // 
+            // labelDepth0
+            // 
+            labelDepth0.AutoSize = true;
+            labelDepth0.Location = new Point(359, 46);
+            labelDepth0.Name = "labelDepth0";
+            labelDepth0.Size = new Size(50, 20);
+            labelDepth0.TabIndex = 7;
+            labelDepth0.Text = "label3";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(8, 46);
+            label2.Name = "label2";
+            label2.Size = new Size(160, 20);
+            label2.TabIndex = 6;
+            label2.Text = "Глубина поиска (от 0)";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(8, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(106, 20);
+            label1.TabIndex = 5;
+            label1.Text = "Источник (url)";
             // 
             // buttonStartCrawl
             // 
@@ -128,24 +190,6 @@
             tabPage3.Size = new Size(852, 446);
             tabPage3.TabIndex = 2;
             // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(8, 9);
-            label1.Name = "label1";
-            label1.Size = new Size(106, 20);
-            label1.TabIndex = 5;
-            label1.Text = "Источник (url)";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(8, 46);
-            label2.Name = "label2";
-            label2.Size = new Size(160, 20);
-            label2.TabIndex = 6;
-            label2.Text = "Глубина поиска (от 0)";
-            // 
             // WebCrawlerForm
             // 
             ClientSize = new Size(860, 479);
@@ -163,6 +207,10 @@
 
         private Label label2;
         private Label label1;
+        private Label labelDepth0;
+        private Label labelDepth3;
+        private Label labelDepth2;
+        private Label labelDepth1;
     }
 }
 

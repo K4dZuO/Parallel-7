@@ -56,6 +56,8 @@ namespace ATPRV_PZ7
             _queue.Enqueue((rootUrl, 0));
             var sw = new Stopwatch();
 
+            int depth = 0;
+
             while (_queue.Count > 0)
             {
                 sw.Restart();
@@ -75,9 +77,11 @@ namespace ATPRV_PZ7
                 sw.Stop();
 
                 long elapsedMilliseconds = sw.ElapsedMilliseconds;
-                Console.WriteLine($"Depth processed in {elapsedMilliseconds}ms");
 
-                // Вывод информации о дереве после обработки каждой глубины
+                // Обновление лейбла с информацией о текущей глубине
+                UpdateDepthLabel(depth, elapsedMilliseconds);
+
+                // Вывод информации о дереве после обработки глубины
                 var treeData = GetTreeData();
                 int treeHeight = treeData.Max(d => d.Depth);
                 int nodeCount = treeData.Count;
@@ -98,8 +102,24 @@ namespace ATPRV_PZ7
                 Console.WriteLine($"Number of nodes: {nodeCount}");
                 Console.WriteLine("Leaf nodes (sample):");
                 leafNodes.ForEach(leaf => Console.WriteLine(leaf));
+
+                depth++;
             }
         }
+
+        // Метод для обновления текста лейбла
+        private void UpdateDepthLabel(int depth, long elapsedMilliseconds)
+        {
+            // Предположим, что у тебя есть лейблы с именами labelDepth0, labelDepth1, и так далее.
+            var labelName = $"labelDepth{depth}";
+            var label = Controls.Find(labelName, true).FirstOrDefault() as Label;
+
+            if (label != null)
+            {
+                label.Text = $"Depth {depth}: {elapsedMilliseconds} ms";
+            }
+        }
+
 
         private async Task ProcessUrl(string url, int depth, int maxDepth)
         {
